@@ -1,4 +1,4 @@
-function [chromaIm, lumaIm, EyeMap] = untitled(currentImage)
+function [chromaIm, lumaIm, EyeMap] = eye_detection(currentImage)
 
 YCbCr = rgb2ycbcr(currentImage); %%convert the first image in our folder to YCbCr.
 [Y, Cb, Cr] = imsplit(YCbCr); %%split the image into Y, Cb and Cr.

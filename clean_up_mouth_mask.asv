@@ -1,0 +1,40 @@
+function [outmask] = clean_up_mouth_mask(mask,meassurements)
+
+% figure
+% imshow(mask)
+% hold on
+
+for k = 1 : length(meassurements)
+  alpha = meassurements(k).Orientation();
+  x = meassurements(k).Centroid(1);
+  y = meassurements(k).Centroid(2);
+  bound = meassurements(k).BoundingBox();
+  
+  bx = uint8(bound(1));
+  by = uint8(bound(2));
+  bw = uint8(bound(3));
+  bh = uint8(bound(4));
+  
+  if alpha < 5 && alpha > -5
+%     plot(x, y, 'b+', 'MarkerSize', 10, 'LineWidth', 3);
+  else
+%       plot(x, y, 'r+', 'MarkerSize', 10, 'LineWidth', 3);
+      mask(bx:bx+bw,by:by+bh) = 0;
+      disp([bx,by, bx+bw, by+bh])
+%       rectangle('Position', [bx,by,bw,bh],...
+%   'EdgeColor','r', 'LineWidth', 3)
+
+        
+  end
+  
+
+end
+
+% hold off
+mask(92:92+bw,by:by+bh) = 0;
+imshow(mask)
+outmask = mask;
+
+
+end
+
