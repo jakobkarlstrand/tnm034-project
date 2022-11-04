@@ -12,7 +12,7 @@ for k = 1 : length(regions)
   centerY = regions(k).Centroid(2);
   
   
-  if ( area < MIN_AREA || circularity < 0.40 || (orientation > MIN_ANGLE || orientation < -MIN_ANGLE) || centerY > 3/5*img_y) % 
+  if ( area < MIN_AREA || circularity < 0.60 || (orientation > MIN_ANGLE || orientation < -MIN_ANGLE)) % 
     bound = regions(k).BoundingBox();
     
     bx = int64(bound(1)); % Pos X
@@ -26,9 +26,9 @@ for k = 1 : length(regions)
 
 end
 
-% figure
-% imshow(mask)
-% title("ahdoihaiw")
+figure
+imshow(mask)
+title("ahdoihaiw")
 
 
 regions = regionprops(mask, 'Centroid', 'BoundingBox');
