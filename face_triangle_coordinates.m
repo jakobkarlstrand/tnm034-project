@@ -4,17 +4,24 @@ function [xy1,xy2,xy3] = face_triangle_coordinates(mouth_mask,eye_mask)
 
 % Get centers of all blobs / shapes in the image
 % Ideally 1 for mouth and 2 for eyes
-mouth_blobMeasurements = regionprops(mouth_mask, 'Centroid','Orientation', 'BoundingBox');
-eyes_blobMeasurements = regionprops(eye_mask, 'Centroid', 'Circularity');
+mouth_regions = regionprops(mouth_mask, 'Centroid','Orientation', 'BoundingBox');
+eyes_regions = regionprops(eye_mask, 'Centroid', 'Circularity', 'BoundingBox', 'Orientation');
 
 
-if length(mouth_blobMeasurements) > 1
-    mouth_mask = clean_up_mouth_mask(mouth_mask, mouth_blobMeasurements);
-    mouth_regions = regionprops(mouth_mask, 'Centroid','Orientation', 'BoundingBox');
+if length(mouth_regions) > 1
+    mouth_mask = clean_up_mouth_mask(mouth_mask, mouth_regions);
+    mouth_regions = regionprops(mouth_mask, 'Centroid');
+    figure
+    imshow(mouth_mask)
+end
+
+if length(eyes_regions) > 2
+    eye_mask = clean_up_eyes_mask(eye_mask, eyes_regions);
+    eyes_regions = regionprops(eye_mask, 'Centroid');
 end
 
 figure
-imshow(mouth_mask);
+imshow(mouth_mask,[]);
 
 hold on
 
@@ -26,18 +33,16 @@ for k = 1 : length(mouth_regions)
 
 end
 hold off
+
 figure
 imshow(eye_mask, []);
 hold on
 
-if length(eyes_blobMeasurements) > 2
-    
-end
 
 
-for k = 1 : length(eyes_blobMeasurements)
-  x = eyes_blobMeasurements(k).Centroid(1);
-  y = eyes_blobMeasurements(k).Centroid(2);
+for k = 1 : length(eyes_regions)
+  x = eyes_regions(k).Centroid(1);
+  y = eyes_regions(k).Centroid(2);
   plot(x, y, 'r+', 'MarkerSize', 10, 'LineWidth', 3);
 
 end
