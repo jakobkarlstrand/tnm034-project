@@ -5,7 +5,7 @@
 function [currentImage_rotated, lEye_rotated, rEye_rotated, mouth_rotated] = rotate_image(currentImage, lEye, rEye, mouth)
 
 %%Create a figure with the line connecting the eyes. 
-figure('visible','off');
+figure;
 size_img = size(currentImage); %%get image size
 lineImage = zeros(size_img(1), size_img(2));
 imshow(lineImage);
@@ -34,22 +34,35 @@ if teta > 0
 elseif teta < 0
     sign = -1;
 end
-rot_angle = teta - 90*sign; %% Angle of rotation.
+rot_angle = teta - 90*sign; % Angle of rotation.
 
-% figure;
-% lineImage_rotated = imrotate(temp, rot_angle, "bilinear", "crop");
-% imshow(lineImage_rotated);
-% title('Rotated line');
+figure;
+subplot(1,2,1);
+lineImage_rotated = imrotate(temp, rot_angle, "bicubic", "crop");
+imshow(lineImage_rotated);
+title('Rotated line');
 
 %%Rotate current image.
-currentImage_rotated = imrotate(currentImage, rot_angle, "bilinear", "crop");
+currentImage_rotated = imrotate(currentImage, rot_angle, "bicubic", "crop");
 
+
+%%TODO
 %%Apply rotation to eye and mouth location.
-rotationMatrix = [cosd(rot_angle) sind(rot_angle); -sind(rot_angle) cosd(rot_angle)]; %%rotation matrix
-centerOfImage = (size(currentImage(:,:,1))/2)'; %%Center of the image.
+rotationMatrix = [cosd(alpha) sind(alpha); -sind(alpha) cosd(alpha)]; 
+centerOriginalImage = (size(currentImage(:,:,1))/2)'; %%Center of original image.
+centerRotatedImage = (size(currentImage_rotated(:,:,1))/2)';  %%Center of rotated image
 
-lEye_rotated = (rotationMatrix * (lEye' - centerOfImage) + centerOfImage)';
-rEye_rotated = (rotationMatrix * (rEye' - centerOfImage) + centerOfImage)';
-mouth_rotated = (rotationMatrix * (mouth' - centerOfImage) + centerOfImage)';
+lEye_rotated = rotationMatrix * (lEye - centerOriginalImage)*centerRotatedImage;
+rEye_rotated = rotationMatrix * (rEye - centerOriginalImage)*centerRotatedImage;
+mouth_rotated= rotationMatrix * (mouth - centerOriginalImage)*centerRotatedImage;
+
+subplot(1,2,2);
+imshow(currentImage_rotated);
+title('Rotated Image');
+hold on 
+plot([lEye_rotated(1),rEye(1)],[lEye(2),rEye(2)],'Color','r','LineWidth',2)
+plot([mouth(1),rEye(1)],[mouth(2),rEye(2)],'Color','r','LineWidth',2)
+plot([mouth(1),lEye(1)],[mouth(2),lEye(2)],'Color','r','LineWidth',2)
+hold off
 
 end
