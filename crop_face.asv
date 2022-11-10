@@ -1,0 +1,22 @@
+function [croppedImage,point_between_eyes, centerOfImage, left_top_corner] = crop_face(currentImage, lEye, rEye, mouth)
+
+distance_between_eyes = abs(lEye - rEye); %%Distance between eyes
+point_between_eyes = (distance_between_eyes / 2) + lEye; %%The point between the eyes
+
+[height, width, chans] = size(currentImage); %%Get image size.
+centerOfImage = [width/2, height/2]; %%Calculate center of x in image.
+distance = centerOfImage - point_between_eyes; %%Distance between point between eyes and center.
+move_point = point_between_eyes + distance; %%move the point between eyes to the center of the image
+
+%%Translate position of eyes and mouth.
+lEye = lEye + distance;
+rEye = rEye + distance;
+mouth = mouth + distance;
+
+left_top_corner = move_point + [-130, -100];
+
+translatedImage = imtranslate(currentImage, [distance(1), distance(2)]); %%TEMP
+
+croppedImage = imcrop(imtranslate
+end
+

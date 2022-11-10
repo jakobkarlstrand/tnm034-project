@@ -1,0 +1,20 @@
+%%This function crops the rotated image. The cropped image should only
+%%contain the face of the image
+
+
+function [croppedImage] = crop_face(currentImage, lEye, rEye)
+
+distance_between_eyes = abs(lEye - rEye); %%Distance between eyes
+point_between_eyes = (distance_between_eyes / 2) + lEye; %%The point between the eyes
+
+[height, width, chans] = size(currentImage); %%Get image size.
+centerOfImage = [width/2, height/2]; %%Calculate center of x in image.
+distance = centerOfImage - point_between_eyes; %%Distance between point between eyes and center.
+move_point = point_between_eyes + distance; %%move the point between eyes to the center of the image
+
+left_top_corner = move_point + [-130, -100]; %%Define top left corner of cropped image.
+translatedImage = imtranslate(currentImage, [distance(1), distance(2)]); %%Translate image
+
+croppedImage = imcrop(translatedImage, [left_top_corner(1) left_top_corner(2) 260 300]); %%Crop the image.
+end
+
