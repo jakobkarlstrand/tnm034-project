@@ -15,9 +15,6 @@ for k = 1 : length(regions)
     bw = int64(bound(3)); % Width X
     bh = int64(bound(4)); % Height Y
     
-    
-     x = regions(k).Centroid(1);
-       y = regions(k).Centroid(2);
 %     rectangle('Position', [bx, by, bw, bh],...
 %   'EdgeColor','r', 'LineWidth', 3)
 %     plot(x, y, 'r+', 'MarkerSize', 10, 'LineWidth', 3);
