@@ -1,4 +1,4 @@
-function [xy1,xy2,xy3] = face_triangle_coordinates(mouth_mask,eye_mask)
+function [xy1,xy2,xy3, eyes, mouth] = face_triangle_coordinates(mouth_mask,eye_mask)
 %Given the mouth and eye mask. Returns the three x and y coordinates for
 %the face triangle from mouth to eyes
 
@@ -24,15 +24,32 @@ end
 
 
 
+n_eyes = size(eyes_regions);
+
+if (n_eyes(1) >=1)
+    xy1 = [eyes_regions(1).Centroid(1),eyes_regions(1).Centroid(2)];
+else
+    xy1 = [0,0];
+end
 
 
 
 
-xy1 = [eyes_regions(1).Centroid(1),eyes_regions(1).Centroid(2)];
-xy2 = [eyes_regions(2).Centroid(1),eyes_regions(2).Centroid(2)];
+if (n_eyes(1) >= 2)
+    xy2 = [eyes_regions(2).Centroid(1),eyes_regions(2).Centroid(2)];
+else
+    if(n_eyes(1) >= 1)
+
+    xy2 = [eyes_regions(1).Centroid(1),eyes_regions(1).Centroid(2)];
+    else
+        xy2 = [0,0];
+    end
+end
+
 xy3 = [mouth_regions(1).Centroid(1), mouth_regions(1).Centroid(2)];
 
-
+eyes = eyes_regions;
+mouth = mouth_regions;
 
 %face_mask = eye_mask + mouth_mask;
 

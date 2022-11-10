@@ -1,9 +1,9 @@
-function [finalImage] = untitled(currentImage, top_percentage)
+function [finalImage] = lighting_compensation(currentImage, top_percentage)
 %Corrects inbalance in the RGB channels based on white patch and contrast
 %streching of the G color channel
 %top_percentage - specifies white patch based on max percentage of image
-figure;
-imshow(currentImage)
+%figure;
+%imshow(currentImage)
 
 R = currentImage(:,:,1);
 G = currentImage(:,:,2);
@@ -33,11 +33,11 @@ B_multiplier = G_max_mean./B_max_mean;
 B = B .* B_multiplier;
 R = R .* R_multiplier;
 
-figure;
+%figure;
 finalImage(:,:,1) = R;
 finalImage(:,:,2) = G;
 finalImage(:,:,3) = B;
-imshow(finalImage)
+%imshow(finalImage)
 
 end
 
