@@ -25,7 +25,7 @@ temp = im2gray(temp); %%convert to grayscale for Hough transform.
 %%Hough transform.
 [H, teta, ro] = hough(temp, "Rhoresolution", 5, "Theta", -90:0.5:89.5);
 [r, t] = find(H == max(H(:)));
-teta = teta(t);           
+teta = teta(t(1));           
 
 %%Determine if the rotation should be clockwise or counter clockwise
 sign = 0;

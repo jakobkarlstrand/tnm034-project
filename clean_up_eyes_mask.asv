@@ -1,7 +1,7 @@
 function [outmask] = clean_up_eyes_mask(mask,regions)
 
 MIN_ANGLE = 70;
-MIN_AREA = 50;
+MIN_AREA = 70;
 img_size = size(mask);
 img_y = img_size(1);
 
@@ -82,6 +82,8 @@ if length(regions) > 2
     end
 
     closest = 999;
+
+ if 
 
 for i = 1:idx_matches-1
     x1 = goodMatches(i,1);

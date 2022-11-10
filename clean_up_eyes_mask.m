@@ -1,14 +1,14 @@
 function [outmask] = clean_up_eyes_mask(mask,regions)
 
 MIN_ANGLE = 70;
-MIN_AREA = 50;
+MIN_AREA = 70;
 img_size = size(mask);
 img_y = img_size(1);
 
 for k = 1 : length(regions)
-  circularity = regions(k).Circularity();
+
   area = regions(k).Area();
-  orientation = regions(k).Orientation();
+
     
   centerY = regions(k).Centroid(2);
   
@@ -32,12 +32,16 @@ end
 % title("ahdoihaiw")
 
 
-regions = regionprops(mask, 'Centroid', 'BoundingBox');
+
+
+
+regions = regionprops(mask, 'Centroid', 'BoundingBox', 'Area');
+goodMatches = [length(regions);6];
 if length(regions) > 2
     min_k = 0.1;
     best_match1 = [0 0];
     best_match2 = [0 0];
-    goodMatches = [length(regions);4];
+    
     idx_matches = 1;
 
 
@@ -58,6 +62,8 @@ if length(regions) > 2
                 goodMatches(idx_matches , 2) = y1;
                 goodMatches(idx_matches , 3) = x2;
                 goodMatches(idx_matches , 4) = y2;
+                goodMatches(idx_matches , 5) = regions(i).Area();
+                goodMatches(idx_matches , 6) = regions(j).Area();
                 idx_matches = idx_matches +1;
               
             else
@@ -71,6 +77,8 @@ if length(regions) > 2
                     goodMatches(idx_matches , 2) = y1;
                     goodMatches(idx_matches , 3) = x2;
                     goodMatches(idx_matches , 4) = y2;
+                    goodMatches(idx_matches , 5) = regions(i).Area();
+                goodMatches(idx_matches , 6) = regions(j).Area();
                     idx_matches = idx_matches +1;
                 end
 
@@ -82,19 +90,28 @@ if length(regions) > 2
     end
 
     closest = 999;
+    biggest = 0;
+
+ 
 
 for i = 1:idx_matches-1
     x1 = goodMatches(i,1);
     y1 = goodMatches(i,2);
     x2 = goodMatches(i,3);
     y2 = goodMatches(i,4);
+    a1 = goodMatches(i,5);
+    a2 = goodMatches(i,6);
 
     center = (2/5*img_y  +3/5*img_y)/2;
 
     if  abs(center - (y1+y2)/2) < closest
-        best_match1 = [x1,y1];
+        if a1+a2 > biggest
+            best_match1 = [x1,y1];
         best_match2 = [x2,y2];
         closest = 3/5*img_y - (y1+y2)/2;
+        biggest = a1+a2;
+        end
+        
     end
 end
 
@@ -155,11 +172,7 @@ for i = 1:length(regions)
 end
 
 end
-% figure
-% imshow(mask)
-% hold on
-% plot(best_match1(1), best_match1(2), 'b+', 'MarkerSize', 10, 'LineWidth', 3);
-% plot(best_match2(1), best_match2(2), 'b+', 'MarkerSize', 10, 'LineWidth', 3);
+
 
 outmask = mask; % Return modified mask
  

@@ -8,17 +8,12 @@ mouth_regions = regionprops(mouth_mask, 'Centroid','Orientation', 'BoundingBox')
 eyes_regions = regionprops(eye_mask, 'Centroid', 'Circularity', 'BoundingBox', 'Orientation', 'Area');
 
 
-if length(mouth_regions) > 1
-    mouth_mask = clean_up_mouth_mask(mouth_mask, mouth_regions);
-    mouth_regions = regionprops(mouth_mask, 'Centroid');
-  
-end
+
 
 if length(eyes_regions) > 2
     eye_mask = clean_up_eyes_mask(eye_mask, eyes_regions);
     eyes_regions = regionprops(eye_mask, 'Centroid');
 end
-
 
 
 
@@ -46,7 +41,20 @@ else
     end
 end
 
+if length(mouth_regions) > 1
+    mouth_mask = clean_up_mouth_mask(mouth_mask, mouth_regions,xy1,xy2);
+    mouth_regions = regionprops(mouth_mask, 'Centroid');
+  
+end
+
+if isempty(mouth_regions)
+xy3 = [0, 0];
+else
 xy3 = [mouth_regions(1).Centroid(1), mouth_regions(1).Centroid(2)];
+end
+
+
+
 
 eyes = eyes_regions;
 mouth = mouth_regions;
