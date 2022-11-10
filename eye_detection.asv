@@ -1,0 +1,14 @@
+%%The function uses three sub-functin
+
+function [illColImage, colEdgeImage, illEdgeImage, hybridImage1, hybridImage2] = eye_detection(currentImage)
+[chromaIm, lumaIm, illuImage] = eye_detection_illumination_based(currentImage);
+colourImage = eye_detection_colour_based(currentImage);
+edgeImage = eye_detection_edge_based(currentImage);
+
+%%combinding images.
+illColImage = illuImage.*colourImage;
+colEdgeImage = colourImage.*edgeImage;
+illEdgeImage = illuImage.*edgeImage;
+hybridImage1 = illColImage.*illEdgeImage;
+hybridImage2 = illColImage.*colEdgeImage;
+end

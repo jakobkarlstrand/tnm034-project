@@ -1,26 +1,19 @@
-function [chromaIm, lumaIm, EyeMap] = eye_detection(currentImage)
+%%The function uses three methods for eye detection, illumination-, colour-
+%%and edge-based. It then combines the returned images according to the 
+% "A hybrid method for eyesdetection in facial images" paper.
 
-YCbCr = rgb2ycbcr(currentImage); %%convert the first image in our folder to YCbCr.
-[Y, Cb, Cr] = imsplit(YCbCr); %%split the image into Y, Cb and Cr.
-Y = uint16(255 * mat2gray(Y)); %%normalize to interval [0,255]
-Cb = uint16(255 * mat2gray(Cb)); %%normalize to interval [0,255]
-Cr = uint16(255 * mat2gray(Cr)); %%normalize to interval [0,255]
+function [hybridImage] = eye_detection(currentImage)
+[chromaIm, lumaIm, illuImage] = eye_detection_illumination_based(currentImage);
+colourImage = eye_detection_colour_based(currentImage);
+edgeImage = eye_detection_edge_based(currentImage);
 
-EyeMapC = (1/3) *(Cb.^2 + (255 - Cr).^2 + (Cb./Cr)); %%Chroma eye map.
-chromaIm = im2double(histeq(EyeMapC)); %%Convert to double
+illuImage = eye_rules(illuImage);
+colourImage = eye_rules(colourImage);
+edgeImage = eye_rules(edgeImage);
 
-SE = strel('disk', 4); %Strukturelement, can assume different shapes. 
-%Erosion (imerode(IM, SE)) = krympning, used for object separation. 
-%Dilation (imdilate(IM,SE)) = Expansion, used to fill holes and gaps. 
-EyeMapL = imdilate(Y, SE) ./ (imerode(Y, SE) + 1); %%Luma eye map.
-lumaIm = im2double(histeq(EyeMapL));
-
-EyeMap = histeq(chromaIm.*lumaIm); %%Create the combined eye map. 
-%%The resulting eye map is then dilated, masked and normalized to brighten
-%%both the eyes and suppress other facial areas....and then
-%%iterative thresholding is used on this eye map.
-EyeMap = (EyeMap - min(EyeMap(:))) / (max(EyeMap(:)) - min(EyeMap(:))); %%Normalize
-Threshold = 0.85;
-EyeMap = EyeMap > Threshold;
-EyeMap = imdilate(EyeMap, SE);
+%%combinding images.
+illColImage = illuImage & colourImage;
+colEdgeImage = colourImage & edgeImage;
+illEdgeImage = illuImage & edgeImage;
+hybridImage = illColImage | colEdgeImage | illEdgeImage; %%Combine the images
 end
