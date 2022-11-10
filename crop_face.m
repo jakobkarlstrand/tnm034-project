@@ -10,11 +10,13 @@ point_between_eyes = (distance_between_eyes / 2) + lEye; %%The point between the
 [height, width, chans] = size(currentImage); %%Get image size.
 centerOfImage = [width/2, height/2]; %%Calculate center of x in image.
 distance = centerOfImage - point_between_eyes; %%Distance between point between eyes and center.
-move_point = point_between_eyes + distance; %%move the point between eyes to the center of the image
 
-left_top_corner = move_point + [-130, -100]; %%Define top left corner of cropped image.
 translatedImage = imtranslate(currentImage, [distance(1), distance(2)]); %%Translate image
 
-croppedImage = imcrop(translatedImage, [left_top_corner(1) left_top_corner(2) 260 300]); %%Crop the image.
+margin_above_eye = 0.8;
+margin_under_eye = 1.7;
+margin_right_left_eye = 0.9;
+
+croppedImage = imcrop(translatedImage, [centerOfImage(1) - margin_right_left_eye*distance_between_eyes(1), centerOfImage(2) - margin_above_eye*distance_between_eyes(1), 2*margin_right_left_eye*distance_between_eyes(1), margin_above_eye*distance_between_eyes(1) + margin_under_eye*distance_between_eyes(1)] );
 end
 
