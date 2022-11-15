@@ -18,5 +18,6 @@ margin_under_eye = 1.7;
 margin_right_left_eye = 0.9;
 
 croppedImage = imcrop(translatedImage, [centerOfImage(1) - margin_right_left_eye*distance_between_eyes(1), centerOfImage(2) - margin_above_eye*distance_between_eyes(1), 2*margin_right_left_eye*distance_between_eyes(1), margin_above_eye*distance_between_eyes(1) + margin_under_eye*distance_between_eyes(1)] );
+croppedImage = imresize(croppedImage, [245 177]);
 end
 
