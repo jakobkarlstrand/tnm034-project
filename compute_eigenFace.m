@@ -3,17 +3,21 @@ function [I] = compute_eigenFace(allFaces)
 M = length(allFaces);
 N = size(allFaces{1});
 
-%%Compute average of all faces
-average = compute_mean_face(allFaces);
-copyAllFaces = allFaces; %%Make a copy of in case we need all faces later.
+%%allocate space.
+x = cell(1, M); 
+averageFace = zeros(N(1)*N(2),1); 
+A = zeros(N(1)*N(2), M); 
+phi = cell(1,M); 
 
-%%For each face, remove the average face and reshape image to N^2 x 1. 
-A = zeros(N(1)*N(2), M); %%Allocate space
+%%For each face, reshape into NxN vetor and calculate average. 
 for i = 1:M
-    copyAllFaces{i} = rgb2gray(copyAllFaces{i} - average); %%Remove average
-    copyAllFaces{i} = reshape(copyAllFaces{i},1,[]); %%Reshape into NxN vector
-    A(:,i) = copyAllFaces{i}(:); %%Store the image vector in A. 
+    x{i} = rgb2gray(allFaces{i}); %%Convert to gray scale.
+    x{i} = reshape(x{i},[],1); %%Reshape into NxN vector.
+    averageFace = averageFace  + (1/M) * x{i}; %%Calculate average face vector.
+    phi{i} = x{i} - averageFace; %%Subtract average face from each face vector.
+    A(:,i) = phi{i}; %%Store the image vector in A. 
 end
+
 
 %%Compute covariance matrix of size MxM
 C = A'*A;
@@ -22,30 +26,37 @@ C = A'*A;
 v = eigenVectors; %%easier to read.
 
 u = A*v; %%step 7 of PCA according to slides.
-eigenFaces = cell(1,M); %%Allocate space
 
-%%Reshaping the n-dim eigenvectors u into matrices will give the Eigenfaces
-for j = 1:M
-    eigenFaces{j} = reshape(u(:,j), N(1), N(2));
-end
+% figure;
+% for j = 1:M
+%     eigenFaces = reshape(u(:,j), N(1), N(2));
+%     subplot(4,4,j);
+%     imshow(eigenFaces);
+% end
 
 %%Sort the eigenvalues in descending order => Index = M, M-1, M-2...
 eigenValues = diag(eigenValues);
 [~, index] = sort(eigenValues, 'descend');
 
-numberOfEigenFaces = 4; %%used to only get the best eigenfaces.
-weight = cell(M, numberOfEigenFaces); %%Allocate space
+numberOfEigenVectors = 8;
+
+weight = cell(M, numberOfEigenVectors); %%Allocate space
 %%calculate weights
 for i = 1:M
-    for j = 1:numberOfEigenFaces
-        weight{i,j} = eigenFaces{index(j)}.*(allFaces{i} - average);
+    for j = 1:numberOfEigenVectors
+        weight{i,j} = u(:,index(i))'* A(:,i);
     end
 end
 
-%%compute the linear combination of each original face
 I = cell(1, M); %%Allocate space
+
+%%compute the linear combination of each original face
 for i = 1:M
-    for j = 1:numberOfEigenFaces
-        I{i} = average + sum(weight{i,j}.*eigenFaces{j});
+    sum = 0;
+    u(:,index(i)) = u(:,index(i))/norm(u(:,index(i))); %%Normalize
+    for j = 1:numberOfEigenVectors
+        sum = sum + weight{i,j}*u(:,index(j));
     end
+    I{i} = averageFace + sum;
+    I{i} = reshape(I{i}, N(1), N(2));
 end
