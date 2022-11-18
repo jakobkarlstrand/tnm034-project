@@ -1,3 +1,5 @@
+%%This function uses PCA to reduce the dimensionality of the dataset
+
 function [I] = compute_eigenFace(allFaces)
 
 M = length(allFaces);
@@ -18,7 +20,6 @@ for i = 1:M
     A(:,i) = phi{i}; %%Store the image vector in A. 
 end
 
-
 %%Compute covariance matrix of size MxM
 C = A'*A;
 
@@ -27,6 +28,8 @@ v = eigenVectors; %%easier to read.
 
 u = A*v; %%step 7 of PCA according to slides.
 
+
+%%Display eigenfaces
 % figure;
 % for j = 1:M
 %     eigenFaces = reshape(u(:,j), N(1), N(2));
@@ -38,13 +41,17 @@ u = A*v; %%step 7 of PCA according to slides.
 eigenValues = diag(eigenValues);
 [~, index] = sort(eigenValues, 'descend');
 
-numberOfEigenVectors = 8;
-
+numberOfEigenVectors = M;  
 weight = cell(M, numberOfEigenVectors); %%Allocate space
+
 %%calculate weights
 for i = 1:M
     for j = 1:numberOfEigenVectors
-        weight{i,j} = u(:,index(i))'* A(:,i);
+       %%Only need to normalize once
+       if(i == 1)
+           u(:,index(j)) = u(:,index(j))/norm(u(:,index(j))); %%Normalize
+       end
+        weight{i,j} = u(:,index(j))'* phi{i};
     end
 end
 
@@ -52,8 +59,7 @@ I = cell(1, M); %%Allocate space
 
 %%compute the linear combination of each original face
 for i = 1:M
-    sum = 0;
-    u(:,index(i)) = u(:,index(i))/norm(u(:,index(i))); %%Normalize
+    sum = 0;   
     for j = 1:numberOfEigenVectors
         sum = sum + weight{i,j}*u(:,index(j));
     end
