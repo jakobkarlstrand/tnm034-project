@@ -22,7 +22,31 @@ for r = 1:size(mask, 1)    % for number of rows of the image
     end
 end
 
-mask_threshold = mask > threshold;
+mask_binary = mask > threshold;
+
+figure
+imshow(mask_binary)
+hold off
+
+%Close image
+se = strel('diamond',40);
+closeIm = imclose(mask_binary,se);
+figure
+imshow(closeIm)
+hold off
+
+%Fill holes in image
+fillIm = imfill(closeIm,"holes");
+
+
+%Erode 
+se = strel('diamond',10);
+erodeIm = imerode(fillIm,se);
+
+
+mask_threshold = fillIm;
+
+
 
 end
 
