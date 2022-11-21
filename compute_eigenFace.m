@@ -1,6 +1,6 @@
 %%This function uses PCA to reduce the dimensionality of the dataset
 
-function [I] = compute_eigenFace(allFaces)
+function [I,weight, averageFace, u, index] = compute_eigenFace(allFaces)
 
 M = length(allFaces);
 N = size(allFaces{1});
@@ -8,17 +8,25 @@ N = size(allFaces{1});
 %%allocate space.
 x = cell(1, M); 
 averageFace = zeros(N(1)*N(2),1); 
-A = zeros(N(1)*N(2), M); 
-phi = cell(1,M); 
 
-%%For each face, reshape into NxN vetor and calculate average. 
+figure;
+%%For each face, reshape into NxN vetor and calculate average.
 for i = 1:M
     x{i} = rgb2gray(allFaces{i}); %%Convert to gray scale.
     x{i} = reshape(x{i},[],1); %%Reshape into NxN vector.
     averageFace = averageFace  + (1/M) * x{i}; %%Calculate average face vector.
-    phi{i} = x{i} - averageFace; %%Subtract average face from each face vector.
-    A(:,i) = phi{i}; %%Store the image vector in A. 
 end
+
+%%allocate space.
+phi = cell(1,M); 
+A = zeros(N(1)*N(2), M); 
+
+for i = 1:M
+    phi{i} = x{i} - averageFace; %%Subtract average face from each face vector.
+    A(:,i) = phi{i}; %%Store the image vector in A.
+end
+
+
 
 %%Compute covariance matrix of size MxM
 C = A'*A;
@@ -42,7 +50,7 @@ eigenValues = diag(eigenValues);
 [~, index] = sort(eigenValues, 'descend');
 
 numberOfEigenVectors = M;  
-weight = cell(M, numberOfEigenVectors); %%Allocate space
+weight = zeros(M, numberOfEigenVectors); %%Allocate space
 
 %%calculate weights
 for i = 1:M
@@ -51,7 +59,7 @@ for i = 1:M
        if(i == 1)
            u(:,index(j)) = u(:,index(j))/norm(u(:,index(j))); %%Normalize
        end
-        weight{i,j} = u(:,index(j))'* phi{i};
+        weight(i,j) = u(:,index(j))'* phi{i};
     end
 end
 
@@ -61,7 +69,7 @@ I = cell(1, M); %%Allocate space
 for i = 1:M
     sum = 0;   
     for j = 1:numberOfEigenVectors
-        sum = sum + weight{i,j}*u(:,index(j));
+        sum = sum + weight(i,j)*u(:,index(j));
     end
     I{i} = averageFace + sum;
     I{i} = reshape(I{i}, N(1), N(2));
