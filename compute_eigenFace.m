@@ -49,7 +49,7 @@ u = A*v; %%step 7 of PCA according to slides.
 eigenValues = diag(eigenValues);
 [~, index] = sort(eigenValues, 'descend');
 
-numberOfEigenVectors = M;  
+numberOfEigenVectors = 12;  
 weight = zeros(M, numberOfEigenVectors); %%Allocate space
 
 %%calculate weights
