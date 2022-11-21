@@ -1,6 +1,6 @@
 function [prob_image] = skinprobabilitymatrix()
 folder = "skin"; %%locate folder
-imagefiles = dir(fullfile(folder,'*.png')); %%store the images
+imagefiles = [dir(fullfile(folder,'*.jpg')); dir(fullfile(folder,'*.png'))]; %%store the images
 nfiles = length(imagefiles); %%define number of images.
 Im = cell(1,nfiles); %%Allocate space
 
@@ -39,6 +39,7 @@ for i = 1:nfiles
   end
 
   prob_image = prob_image./max(prob_image(:));
+  imwrite(prob_image, 'skinprobability.png');
   
   
 end
