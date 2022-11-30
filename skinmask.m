@@ -1,4 +1,4 @@
-function [mask_threshold] = skinmask(currentImage, threshold)
+function [mask_threshold] = skinmask(currentImage, threshold, matrix)
 
 YCbCr = rgb2ycbcr(currentImage); %%convert the first image in our folder to YCbCr.
 [Y, Cb, Cr] = imsplit(YCbCr); %%split the image into Y, Cb and Cr.'
@@ -7,12 +7,6 @@ Cb = Cb*255;
 Cr = Cr*255;
 
 mask = zeros(size(currentImage, 1), size(currentImage, 2));
-
-%Get skin probability matrix
-matrix = skinprobabilitymatrix();
-%matrix_blurred = imgaussfilt(matrix,3);
-%imwrite(matrix_blurred, "skinprobability_blurred.png")
-matrix = matrix./max(matrix(:));
 
 
 %%Multiply currentImage with skin probability matrix
@@ -26,13 +20,15 @@ mask_binary = mask > threshold;
 
 figure
 imshow(mask_binary)
+title("mask_binary")
 hold off
 
 %Close image
-se = strel('diamond',40);
+se = strel('diamond',10);
 closeIm = imclose(mask_binary,se);
 figure
 imshow(closeIm)
+title("closeIm")
 hold off
 
 %Fill holes in image
