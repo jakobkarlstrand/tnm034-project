@@ -2,7 +2,7 @@
 %%minimize intra-class variance and maximize inter-class variance. Or...
 %%atleast i think it does :)
 
-function [F, weight] = fisherfaces(allFaces)
+function [F, weight] = fisherfaces(imagefiles, allFaces)
 
 M = length(allFaces); %%Number of images
 c = 16; %%number of persons
@@ -49,23 +49,68 @@ for i = 1 : M
     V(:,i) = u'*A(:,i);
 end
 
-m_projected = mean(V,2);
-m = zeros(M-c,c);
-Sw = zeros(M-c, M-c); %%Initialization os Within scatter matrix
-Sb = zeros(M-c, M-c); %%Initialization of Between scatter matrix
-classPopulation = 2; %%Number of images of person i. Idk how to solve this...
- 
-for i = 1 : c-1
-    m(:,i) = mean((V(:,((i-1)*classPopulation+1):i*classPopulation)), 2)'; 
-    Sb = Sb + (m(:,i) - m_projected) * (m(:,i) - m_projected)'; %%Between scatter matrix
-       %%Idk vad som händer
-       S  = zeros(M-c, M-c); 
-       for j = ((i-1)*classPopulation+1):(i*classPopulation)
-        S = S + (V(:,j)-m(:,i)) * (V(:,j)-m(:,i))';
-       end
+%%Group images of same person
+FileName = {imagefiles.name};
+[~, person] = (strtok(FileName, '_'));
 
-    Sw = Sw + S; %%Within scatter matrix.
+Index = zeros(M, 4);
+for iName = 1:numel(person)
+    match = endsWith(FileName, [person{iName}, (strtok(FileName, '_'))]);
+    temp = find(match);
+    Index(iName, 1:length(temp)) = temp;
+    Index = unique(Index, 'rows', 'stable'); %%Remove duplicates.
 end
+Index = Index(any(Index,2),:); %%Remove rows that only contains zeros.
+
+m_projected = mean(V,2);
+Sw = zeros(M-c, M-c); %%Initialization of Within scatter matrix
+Sb = zeros(M-c, M-c); %%Initialization of Between scatter matrix
+
+%%For each person
+for i = 1 : c-1
+    personIndices = Index(i,:);
+    personIndices = nonzeros(personIndices);
+    classPolulation = length(personIndices); %%number of images of current person.
+    averagePerson = zeros(N(1)*N(2),1); 
+    y = cell(1, classPolulation); 
+    A_new = zeros(N(1)*N(2), classPolulation);
+
+    figure;
+    for j = 1:classPolulation
+        y{j} = rgb2gray(allFaces{personIndices(j)}); %%Convert to gray scale.
+        subplot(1, classPolulation, j);
+        imshow(y{j});
+        y{j} = reshape(y{j},[],1); %%Reshape into NxN vector.
+        averagePerson = averagePerson  + (1/classPolulation) * y{j}; %%Calculate average face vector.
+    end
+    sgtitle('Images of person');
+
+    for l = 1:classPolulation
+        phi_new{l} = y{l} - averagePerson; %%Subtract average face from each face vector.
+        A_new(:,l) = phi_new{l}; %%Store the image vector in A.
+    end
+
+    for l = 1 : classPolulation
+        V_new(:,l) = u'*A_new(:,l);
+    end
+
+    averagePerson_projected = u'*averagePerson;
+
+%     figure;
+%     averagePerson = reshape(averagePerson, N(1), N(2));
+%     imshow(averagePerson);
+%     title('Average of person');
+
+    Sb = Sb + (classPolulation * (averagePerson_projected - m_projected) * (averagePerson_projected - m_projected)'); %%Between scatter matrix
+    A_person = zeros(M-c, classPolulation);
+    for k = 1:classPolulation
+        A_person(:,k) = V_new(:,k) - averagePerson_projected;
+    end
+    Sw = Sw + A_person * A_person';
+end
+
+Sb
+Sw
 
 %%Maximise the Between Scatter Matrix, while minimising the Within Scatter Matrix.
 [W_eigenvectors, W_eigenvalues] = eig(Sb,Sw);
@@ -79,20 +124,13 @@ for i = 1 : c-1
     U(:,i) = W_eigenvectors(:,index(i)); %%Eigenfaces. Should be of size (M-c) x (c-1)
 end
 
-%F = zeros(M, c-1); Can't uncommon this, here is why:
-%F is not of size M x c-1 because the number of images for each person is
-%not the same. Idk how to solve that part.
-for i = 1 : c * classPopulation
-    F(i,:) = U' * V(:,i); %%Should be of size M x (c - 1)
+F = zeros(N(1)*N(2), c-1);
+for i = 1 : c - 1
+  %  F(i,:) =....
 end
 
 %%Calculate weights
-weight = zeros(M, c-1); %%Allocate space
+weight = zeros(N(1)*N(2), c-1); %%Allocate space
 for i = 1 : M
-    for j = 1 : c-1
-       if(i == 1)
-           u(:,j) = u(:,j)/norm(u(:,j)); %%Normalize
-       end
-       weight(i,j) = u(:,index(j))'* x{i};
-    end
+    weight = F'*x{i};
 end
