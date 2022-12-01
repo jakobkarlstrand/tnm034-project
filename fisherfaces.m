@@ -5,7 +5,7 @@
 function [F, weight] = fisherfaces(imagefiles, allFaces)
 
 M = length(allFaces); %%Number of images
-c = 16; %%number of persons
+c = 7; %%number of persons
 N = size(allFaces{1});
 
 %%allocate space.
@@ -62,31 +62,28 @@ for iName = 1:numel(person)
 end
 Index = Index(any(Index,2),:); %%Remove rows that only contains zeros.
 
-m_projected = mean(V,2);
+m_projected = mean(V,2); %%Total mean in eigenspace
 Sw = zeros(M-c, M-c); %%Initialization of Within scatter matrix
 Sb = zeros(M-c, M-c); %%Initialization of Between scatter matrix
 
 %%For each person
-for i = 1 : c-1
+for i = 1 : c
     personIndices = Index(i,:);
-    personIndices = nonzeros(personIndices);
+    personIndices = nonzeros(personIndices); %%Store index for each image of current person.
     classPolulation = length(personIndices); %%number of images of current person.
-    averagePerson = zeros(N(1)*N(2),1); 
-    y = cell(1, classPolulation); 
-    A_new = zeros(N(1)*N(2), classPolulation);
+    averagePerson = zeros(N(1)*N(2),1); %%Allocate space
+    y = cell(1, classPolulation); %%Allocate space
+    A_new = zeros(N(1)*N(2), classPolulation); %%Allocate space
 
-    figure;
+    %%Calculate average face of current person.
     for j = 1:classPolulation
         y{j} = rgb2gray(allFaces{personIndices(j)}); %%Convert to gray scale.
-        subplot(1, classPolulation, j);
-        imshow(y{j});
         y{j} = reshape(y{j},[],1); %%Reshape into NxN vector.
         averagePerson = averagePerson  + (1/classPolulation) * y{j}; %%Calculate average face vector.
     end
-    sgtitle('Images of person');
 
     for l = 1:classPolulation
-        phi_new{l} = y{l} - averagePerson; %%Subtract average face from each face vector.
+        phi_new{l} = y{l} - averagePerson;
         A_new(:,l) = phi_new{l}; %%Store the image vector in A.
     end
 
@@ -94,11 +91,11 @@ for i = 1 : c-1
         V_new(:,l) = u'*A_new(:,l);
     end
 
-    averagePerson_projected = u'*averagePerson;
+    averagePerson_projected = u'*averagePerson
 
 %     figure;
-%     averagePerson = reshape(averagePerson, N(1), N(2));
-%     imshow(averagePerson);
+%     averagePerson_temp = reshape(averagePerson, N(1), N(2));
+%     imshow(averagePerson_temp);
 %     title('Average of person');
 
     Sb = Sb + (classPolulation * (averagePerson_projected - m_projected) * (averagePerson_projected - m_projected)'); %%Between scatter matrix
@@ -109,8 +106,6 @@ for i = 1 : c-1
     Sw = Sw + A_person * A_person';
 end
 
-Sb
-Sw
 
 %%Maximise the Between Scatter Matrix, while minimising the Within Scatter Matrix.
 [W_eigenvectors, W_eigenvalues] = eig(Sb,Sw);
@@ -125,12 +120,13 @@ for i = 1 : c-1
 end
 
 F = zeros(N(1)*N(2), c-1);
+
 for i = 1 : c - 1
-  %  F(i,:) =....
+   F(:,i) = u*U(:,i);
 end
 
 %%Calculate weights
-weight = zeros(N(1)*N(2), c-1); %%Allocate space
+weight = zeros(c-1, M); %%Allocate space
 for i = 1 : M
-    weight = F'*x{i};
+    weight(:,i) = F'*x{i};
 end
