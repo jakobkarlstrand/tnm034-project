@@ -2,18 +2,32 @@
 %%minimize intra-class variance and maximize inter-class variance. Or...
 %%atleast i think it does :)
 
-function [F, weight] = fisherfaces(imagefiles, allFaces)
+function [F, u, weight] = fisherfaces(imagefiles, allFaces)
 
 M = length(allFaces); %%Number of images
-c = 7; %%number of persons
 N = size(allFaces{1});
+
+%%Group images of same person and calculate number of persons
+FileName = {imagefiles.name};
+[~, person] = (strtok(FileName, '_'));
+
+Index = zeros(M, 4); %%Allocate space
+for iName = 1:numel(person)
+    match = endsWith(FileName, [person{iName}, (strtok(FileName, '_'))]);
+    temp = find(match);
+    Index(iName, 1:length(temp)) = temp;
+    Index = unique(Index, 'rows', 'stable'); %%Remove duplicates.
+end
+Index = Index(any(Index,2),:); %%Remove rows that only contains zeros.
+c = size(Index);
+c = c(1); %%number of persons;
 
 %%allocate space.
 x = cell(1, M); 
 averageFace = zeros(N(1)*N(2),1); 
 
 figure;
-%%For each face, reshape into NxN vetor and calculate average.
+%%For each face, reshape into NxN vector and calculate average.
 for i = 1:M
     x{i} = rgb2gray(allFaces{i}); %%Convert to gray scale.
     x{i} = reshape(x{i},[],1); %%Reshape into NxN vector.
@@ -32,13 +46,11 @@ end
 %%Compute covariance matrix of size MxM
 C = A'*A;
 
-
 [eigenVectors, eigenValues] = eig(C); %%calculates eigenvalues and eigenvectors of C.
-v = eigenVectors; %%easier to read.
 
 %%Sorting and eliminating small eigenvalues 
 [~,ind] = sort(eigenValues, 'descend');
-eigenVec = v(:,ind);
+eigenVec = eigenVectors(:,ind);
 eigenVec = eigenVec(:,1:M-c);
 
 u = A*eigenVec; %%eigenfaces
@@ -47,19 +59,6 @@ V = zeros(M-c, M);
 for i = 1 : M
     V(:,i) = u'*A(:,i);
 end
-
-%%Group images of same person
-FileName = {imagefiles.name};
-[~, person] = (strtok(FileName, '_'));
-
-Index = zeros(M, 4);
-for iName = 1:numel(person)
-    match = endsWith(FileName, [person{iName}, (strtok(FileName, '_'))]);
-    temp = find(match);
-    Index(iName, 1:length(temp)) = temp;
-    Index = unique(Index, 'rows', 'stable'); %%Remove duplicates.
-end
-Index = Index(any(Index,2),:); %%Remove rows that only contains zeros.
 
 globalAverage = (u'*averageFace); %%Projected global average
 Sw = zeros(M-c, M-c); %%Initialization of Within scatter matrix
@@ -72,19 +71,18 @@ for i = 1 : c
     classPolulation = length(personIndices); %%number of images of current person.
     averagePerson = zeros(M-c,1); %%Allocate space
 
-    %%Calculate average face of current person.
+    %%Calculate projected average face of current person.
     for j = 1:classPolulation
-        averagePerson = averagePerson  + V(:,personIndices(j));
+        averagePerson = averagePerson + V(:,personIndices(j));
     end
-    
     averagePerson = averagePerson./classPolulation;
 
     Sb = Sb + (classPolulation * (averagePerson - globalAverage) * (averagePerson - globalAverage)'); %%Between scatter matrix
     A_person = zeros(M-c, classPolulation);
     for k = 1:classPolulation
-        A_person(:,k) = V(:,personIndices(k)) - averagePerson;
+        A_person(:,k) = V(:,personIndices(k)) - averagePerson; %%remove average from each image of the current person.
     end
-    Sw = Sw + (A_person * A_person');
+    Sw = Sw + (A_person * A_person'); %%Within scat
 end
 
 %%Maximise the Between Scatter Matrix, while minimising the Within Scatter Matrix.
@@ -96,7 +94,7 @@ W_eigenvalues = diag(W_eigenvalues);
 
 U = zeros(M-c, c-1);
 for i = 1 : c-1
-    U(:,i) = W_eigenvectors(:,index(i)); %%Eigenfaces. Should be of size (M-c) x (c-1)
+    U(:,i) = W_eigenvectors(:,index(i));
 end
 
 F = zeros(N(1)*N(2), c-1);

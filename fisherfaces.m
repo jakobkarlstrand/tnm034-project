@@ -5,15 +5,29 @@
 function [F, u, weight] = fisherfaces(imagefiles, allFaces)
 
 M = length(allFaces); %%Number of images
-c = 7; %%number of persons
 N = size(allFaces{1});
+
+%%Group images of same person and calculate number of persons
+FileName = {imagefiles.name};
+[~, person] = (strtok(FileName, '_'));
+
+Index = zeros(M, 4); %%Allocate space
+for iName = 1:numel(person)
+    match = endsWith(FileName, [person{iName}, (strtok(FileName, '_'))]);
+    temp = find(match);
+    Index(iName, 1:length(temp)) = temp;
+    Index = unique(Index, 'rows', 'stable'); %%Remove duplicates.
+end
+Index = Index(any(Index,2),:); %%Remove rows that only contains zeros.
+c = size(Index);
+c = c(1); %%number of persons;
 
 %%allocate space.
 x = cell(1, M); 
 averageFace = zeros(N(1)*N(2),1); 
 
 figure;
-%%For each face, reshape into NxN vetor and calculate average.
+%%For each face, reshape into NxN vector and calculate average.
 for i = 1:M
     x{i} = rgb2gray(allFaces{i}); %%Convert to gray scale.
     x{i} = reshape(x{i},[],1); %%Reshape into NxN vector.
@@ -46,19 +60,6 @@ for i = 1 : M
     V(:,i) = u'*A(:,i);
 end
 
-%%Group images of same person
-FileName = {imagefiles.name};
-[~, person] = (strtok(FileName, '_'));
-
-Index = zeros(M, 4);
-for iName = 1:numel(person)
-    match = endsWith(FileName, [person{iName}, (strtok(FileName, '_'))]);
-    temp = find(match);
-    Index(iName, 1:length(temp)) = temp;
-    Index = unique(Index, 'rows', 'stable'); %%Remove duplicates.
-end
-Index = Index(any(Index,2),:); %%Remove rows that only contains zeros.
-
 globalAverage = (u'*averageFace); %%Projected global average
 Sw = zeros(M-c, M-c); %%Initialization of Within scatter matrix
 Sb = zeros(M-c, M-c); %%Initialization of Between scatter matrix
@@ -68,21 +69,20 @@ for i = 1 : c
     personIndices = Index(i,:);
     personIndices = nonzeros(personIndices); %%Store index for each image of current person.
     classPolulation = length(personIndices); %%number of images of current person.
-    averagePerson = zeros(M-c,1); %%Allocate space
+    averageCurrentPerson = zeros(N(1)*N(2),1); %%Allocate space
 
     %%Calculate projected average face of current person.
     for j = 1:classPolulation
-        averagePerson = averagePerson  + V(:,personIndices(j));
+        averageCurrentPerson = averageCurrentPerson + (1/classPolulation) * x{personIndices(j)};
     end
-    
-    averagePerson = averagePerson./classPolulation;
+    averagePerson = (u'*averageCurrentPerson);
 
     Sb = Sb + (classPolulation * (averagePerson - globalAverage) * (averagePerson - globalAverage)'); %%Between scatter matrix
     A_person = zeros(M-c, classPolulation);
     for k = 1:classPolulation
-        A_person(:,k) = V(:,personIndices(k)) - averagePerson;
+        A_person(:,k) = V(:,personIndices(k)) - averagePerson; %%remove average from each image of the current person.
     end
-    Sw = Sw + (A_person * A_person');
+    Sw = Sw + (A_person * A_person'); %%Within scatter matrix
 end
 
 %%Maximise the Between Scatter Matrix, while minimising the Within Scatter Matrix.
