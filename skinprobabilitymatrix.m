@@ -34,7 +34,7 @@ for i = 1:nfiles
 
 end
    
-  prob_image = prob_image./max(prob_image(:))
+  prob_image = prob_image./max(prob_image(:));
   imwrite(prob_image, 'skinprobability.jpg');
 
 
