@@ -55,7 +55,6 @@ eigenVec = eigenVectors(:,ind);
 eigenVec = eigenVec(:,1:M-c);
 
 u = A*eigenVec; %%eigenfaces
-
 V = zeros(M-c, M);
 
 for i = 1 : M
@@ -65,19 +64,18 @@ end
 globalAverage = (u'*averageFace); %%Projected global average
 Sw = zeros(M-c, M-c); %%Initialization of Within scatter matrix
 Sb = zeros(M-c, M-c); %%Initialization of Between scatter matrix
-
+averageCurrentPerson = zeros(N(1)*N(2),c); %%Allocate space
 %%For each person
 for i = 1 : c
     personIndices = Index(i,:);
-    personIndices = nonzeros(personIndices); %%Store index for each image of current person.
-    classPolulation = length(personIndices) %%number of images of current person.
-    averageCurrentPerson = zeros(N(1)*N(2),1); %%Allocate space
+    personIndices = nonzeros(personIndices); %%Store index for each image of current person. 
+    classPolulation = length(personIndices); %%number of images of current person.
 
     %%Calculate projected average face of current person.
     for j = 1:classPolulation
-        averageCurrentPerson = averageCurrentPerson + (1/classPolulation) * x{personIndices(j)};
+        averageCurrentPerson(:,i) = averageCurrentPerson(:,i) + (1/classPolulation) * x{personIndices(j)};
     end
-    averagePersonProjected = (u'*averageCurrentPerson);
+    averagePersonProjected = (u'*averageCurrentPerson(:,i));
 
     Sb = Sb + (classPolulation * (averagePersonProjected - globalAverage) * (averagePersonProjected - globalAverage)'); %%Between scatter matrix
     A_person = zeros(M-c, classPolulation);
@@ -103,7 +101,7 @@ for i = 1 : c - 1
 end
 
 %%Calculate weights
-weight = zeros(c-1, M); %%Allocate space
-for i = 1 : M
-    weight(:,i) = F'*x{i};
+weight = zeros(c-1, c); %%Allocate space
+for i = 1 : c
+    weight(:,i) = F'*averageCurrentPerson(:,i);
 end
