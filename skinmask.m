@@ -18,18 +18,12 @@ end
 
 mask_binary = mask > threshold;
 
-figure
-imshow(mask_binary)
-title("mask_binary")
-hold off
+
 
 %Close image
 se = strel('diamond',10);
 closeIm = imclose(mask_binary,se);
-figure
-imshow(closeIm)
-title("closeIm")
-hold off
+
 
 %Fill holes in image
 fillIm = imfill(closeIm,"holes");
