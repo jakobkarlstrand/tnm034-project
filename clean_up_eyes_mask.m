@@ -1,4 +1,4 @@
-function [outmask] = clean_up_eyes_mask(mask,regions)
+function [outmask] = clean_up_eyes_mask(mask,regions,mouth_coordinates)
 
 MIN_ANGLE = 70;
 MIN_AREA = 25;
@@ -74,25 +74,34 @@ if length(regions) > 2
                 k_angle =   abs((y2-y1) / (x2-x1));
     
                 if k_angle <= min_k
-                    
+                     
+                    % Check if mouth coordinate exists, if so --> Skip
+                    % coordiante if not on each side of mouth
+                    if mouth_coordinates(1) ~= -1  && ~(mouth_coordinates(1) > min(x1,x2) && mouth_coordinates(1) < max(x1,x2))
+                        continue
+
+                    end
+
                     min_k = k_angle;
                     best_match1 = [x1 y1];
                     best_match2 = [x2 y2];
-                     goodMatches(idx_matches , 1) = x1;
+                    goodMatches(idx_matches , 1) = x1;
                     goodMatches(idx_matches , 2) = y1;
                     goodMatches(idx_matches , 3) = x2;
                     goodMatches(idx_matches , 4) = y2;
                     goodMatches(idx_matches , 5) = regions(i).Area();
-                goodMatches(idx_matches , 6) = regions(j).Area();
+                    goodMatches(idx_matches , 6) = regions(j).Area();
                     idx_matches = idx_matches +1;
                 end
+            end
 
             end
 
            
 
         end
-    end
+end
+end
 
     closest = 999;
     biggest = 0;

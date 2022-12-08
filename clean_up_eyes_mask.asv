@@ -1,7 +1,7 @@
-function [outmask] = clean_up_eyes_mask(mask,regions)
+function [outmask] = clean_up_eyes_mask(mask,regions,mouth_coordinates)
 
 MIN_ANGLE = 70;
-MIN_AREA = 30;
+MIN_AREA = 25;
 img_size = size(mask);
 img_y = img_size(1);
 img_x = img_size(2);
@@ -17,7 +17,7 @@ for k = 1 : length(regions)
   centerY = regions(k).Centroid(2);
   
   
-   if (area <= MIN_ centerY > 3/5*img_y) || centerY < 2/5*img_y % 
+   if (area <= MIN_AREA || centerY > 3/5*img_y) || centerY < 2/5*img_y % 
     bound = regions(k).BoundingBox();
     
     bx = int64(bound(1)); % Pos X
@@ -74,18 +74,26 @@ if length(regions) > 2
                 k_angle =   abs((y2-y1) / (x2-x1));
     
                 if k_angle <= min_k
-                    
+                     
+                    % Check if mouth coordinate exists, if so --> Skip
+                    % coordiante if not on each side of mouth
+                    if mouth_coordinates(1) ~= -1  && ~(mouth_coordinates(1) > min(x1,x2) && mouth_coordinates(1) < max(x1,x2))
+                        continue
+
+                    end
+
                     min_k = k_angle;
                     best_match1 = [x1 y1];
                     best_match2 = [x2 y2];
-                     goodMatches(idx_matches , 1) = x1;
+                    goodMatches(idx_matches , 1) = x1;
                     goodMatches(idx_matches , 2) = y1;
                     goodMatches(idx_matches , 3) = x2;
                     goodMatches(idx_matches , 4) = y2;
                     goodMatches(idx_matches , 5) = regions(i).Area();
-                goodMatches(idx_matches , 6) = regions(j).Area();
+                    goodMatches(idx_matches , 6) = regions(j).Area();
                     idx_matches = idx_matches +1;
                 end
+            end
 
             end
 
