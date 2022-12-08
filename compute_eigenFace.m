@@ -49,7 +49,7 @@ u = A*v; %%step 7 of PCA according to slides.
 eigenValues = diag(eigenValues);
 [~, index] = sort(eigenValues, 'descend');
 
-numberOfEigenVectors = 12;  
+numberOfEigenVectors = 16;  
 weight = zeros(M, numberOfEigenVectors); %%Allocate space
 
 %%calculate weights
@@ -74,3 +74,5 @@ for i = 1:M
     I{i} = averageFace + sum;
     I{i} = reshape(I{i}, N(1), N(2));
 end
+
+save('computedData.mat', 'weight', 'averageFace', 'u', 'index');
