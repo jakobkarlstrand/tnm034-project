@@ -33,8 +33,9 @@ fillIm = imfill(closeIm,"holes");
 se = strel('diamond',10);
 erodeIm = imerode(fillIm,se);
 
+biggestObject = bwareafilt(fillIm,1);
 
-mask_threshold = fillIm;
+mask_threshold = biggestObject;
 
 
 

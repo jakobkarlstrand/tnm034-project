@@ -1,9 +1,10 @@
 function [outmask] = clean_up_eyes_mask(mask,regions)
 
 MIN_ANGLE = 70;
-MIN_AREA = 70;
+MIN_AREA = 25;
 img_size = size(mask);
 img_y = img_size(1);
+img_x = img_size(2);
 
 
 % Ta bort alla markeringar som ligger utanför intervallet eller som är
@@ -16,7 +17,7 @@ for k = 1 : length(regions)
   centerY = regions(k).Centroid(2);
   
   
-   if ( area < MIN_AREA   || centerY > 3/5*img_y) || centerY < 2/5*img_y % 
+   if (area <= MIN_AREA || centerY > 3/5*img_y) || centerY < 2/5*img_y % 
     bound = regions(k).BoundingBox();
     
     bx = int64(bound(1)); % Pos X
@@ -41,7 +42,7 @@ end
 regions = regionprops(mask, 'Centroid', 'BoundingBox', 'Area');
 goodMatches = [length(regions);6];
 if length(regions) > 2
-    min_k = 0.1;
+    min_k = 0.07;
     best_match1 = [0 0];
     best_match2 = [0 0];
     
@@ -57,21 +58,22 @@ if length(regions) > 2
             x2 = xy2(1);
             y1 = xy1(2);
             y2 = xy2(2);
-            if x2-x1 == 0
+            if abs(x2-x1) < 70 || abs(x2-x1) >= 150
                 % Do nothing
-                best_match1 = [x1 y1];
-                best_match2 = [x2 y2];
-                goodMatches(idx_matches , 1) = x1;
-                goodMatches(idx_matches , 2) = y1;
-                goodMatches(idx_matches , 3) = x2;
-                goodMatches(idx_matches , 4) = y2;
-                goodMatches(idx_matches , 5) = regions(i).Area();
-                goodMatches(idx_matches , 6) = regions(j).Area();
-                idx_matches = idx_matches +1;
-              
+%                 best_match1 = [x1 y1];
+%                 best_match2 = [x2 y2];
+%                 goodMatches(idx_matches , 1) = x1;
+%                 goodMatches(idx_matches , 2) = y1;
+%                 goodMatches(idx_matches , 3) = x2;
+%                 goodMatches(idx_matches , 4) = y2;
+%                 goodMatches(idx_matches , 5) = regions(i).Area();
+%                 goodMatches(idx_matches , 6) = regions(j).Area();
+%                 idx_matches = idx_matches +1;
+%               
             else
                 k_angle =   abs((y2-y1) / (x2-x1));
-                if k_angle < min_k
+    
+                if k_angle <= min_k
                     
                     min_k = k_angle;
                     best_match1 = [x1 y1];
@@ -106,14 +108,15 @@ for i = 1:idx_matches-1
     a2 = goodMatches(i,6);
 
     center = (2/5*img_y  +3/5*img_y)/2;
+ 
 
     if  abs(center - (y1+y2)/2) < closest
-        if a1+a2 > biggest
-            best_match1 = [x1,y1];
+       
+        best_match1 = [x1,y1];
         best_match2 = [x2,y2];
         closest = 3/5*img_y - (y1+y2)/2;
-        biggest = a1+a2;
-        end
+       
+    
         
     end
 end
