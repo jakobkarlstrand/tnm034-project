@@ -4,7 +4,7 @@ img_size = size(mouth_mask);
 img_y = img_size(1);
 img_x = img_size(2);
 mouth_mask_temp = mouth_mask;
-
+found_regions = [];
 %% Remove all objects above or below a specified area of the image.
 for k = 1:length(mouth_regions_1)
     mouthX = mouth_regions_1(k).Centroid(1);
@@ -50,12 +50,11 @@ else
 
 
     mouth_regions_stage2 = regionprops(mouth_mask_temp2, 'Centroid', 'BoundingBox', 'Area');
-    found_regions = mouth_regions_stage2;
 
     %%If found 1 mouth region, do nothing.
     if (length(mouth_regions_stage2) == 1)
-        %&Do nothing
-    %%Did not find any mouth regions, adjust the area.
+        found_regions = mouth_regions_stage2;
+        %%Did not find any mouth regions, adjust the area.
     elseif (isempty(mouth_regions_stage2))
         min_area = 865;
         max_area = 1700;
@@ -77,7 +76,7 @@ else
         end
         mouth_regions_stage2 = regionprops(mouth_mask_temp2, 'Centroid', 'BoundingBox', 'Area');
         found_regions = mouth_regions_stage2;
-    %%Found more than one mouth region, adjust the area.
+        %%Found more than one mouth region, adjust the area.
     else
         min_area = 1850;
         max_area = 2100;
