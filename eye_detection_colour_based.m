@@ -6,7 +6,7 @@ function [colourImage] = eye_detection_colour_based(currentImage)
 grayImage = rgb2gray(currentImage);
 histImage = histeq(grayImage);
 
-Threshold = 1/255; %%20 is a good threshold according to the paper.
+Threshold = 20/255; %%20 is a good threshold according to the paper.
                     % Division with 255 due to [0,1].
 colourImage = histImage > Threshold;
 end
