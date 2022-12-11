@@ -2,7 +2,7 @@
 %%mouth as arguments. It uses Hough transform to rotate the image so that
 %%the eyes are horizontal. 
 
-function [currentImage_rotated, lEye_rotated, rEye_rotated, mouth_rotated] = rotate_image(currentImage, lEye, rEye, mouth)
+function [currentImage_rotated, lEye_rotated, rEye_rotated] = rotate_image(currentImage, lEye, rEye)
 
 %%Create a figure with the line connecting the eyes. 
 figure('visible','off');
@@ -15,7 +15,7 @@ hold off
 title('Line to rotate');
 set(gca,'XColor','none'); %%Remove borders for the image. 
 F = getframe(gca); %%Take a snapshot of the image with the plot inside it.
-[temp, Map] = frame2im(F); %%Save the snapshot in temp. 
+[temp, ~] = frame2im(F); %%Save the snapshot in temp. 
 
 temp = im2gray(temp); %%convert to grayscale for Hough transform. 
 % figure;
@@ -23,8 +23,8 @@ temp = im2gray(temp); %%convert to grayscale for Hough transform.
 % title('Snapshot of image');
 
 %%Hough transform.
-[H, teta, ro] = hough(temp, "Rhoresolution", 5, "Theta", -90:0.5:89.5);
-[r, t] = find(H == max(H(:)));
+[H, teta, ~] = hough(temp, "Rhoresolution", 5, "Theta", -90:0.5:89.5);
+[~, t] = find(H == max(H(:)));
 teta = teta(t(1));           
 
 %%Determine if the rotation should be clockwise or counter clockwise
@@ -50,6 +50,4 @@ centerOfImage = (size(currentImage(:,:,1))/2)'; %%Center of the image.
 
 lEye_rotated = (rotationMatrix * (lEye' - centerOfImage) + centerOfImage)';
 rEye_rotated = (rotationMatrix * (rEye' - centerOfImage) + centerOfImage)';
-mouth_rotated = (rotationMatrix * (mouth' - centerOfImage) + centerOfImage)';
-
 end
