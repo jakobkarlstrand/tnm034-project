@@ -33,9 +33,29 @@ for i = 1:nfiles
   end
 
 end
+  prob_image(128,128) = 0;  
    
   prob_image = prob_image./max(prob_image(:));
   imwrite(prob_image, 'skinprobability.jpg');
+
+
+  %Save image
+  [height,width,depth] = size(prob_image);
+  
+  x = 1:height
+  y = 1:width
+  f = prob_image;
+  figure;
+  h = surf(x,y,f);
+  set(h,'LineStyle','none')
+  xlabel('Cr');
+  ylabel('Cb');
+  zlabel('Probability');
+  colorbar
+
+
+  prob_image_large=imresize(prob_image, [2048 2048]);
+  imwrite(prob_image_large, 'skinprobability_vis.jpg');
 
 
 end

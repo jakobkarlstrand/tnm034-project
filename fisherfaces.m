@@ -65,6 +65,7 @@ globalAverage = (u'*averageFace); %%Projected global average
 Sw = zeros(M-c, M-c); %%Initialization of Within scatter matrix
 Sb = zeros(M-c, M-c); %%Initialization of Between scatter matrix
 averageCurrentPerson = zeros(N(1)*N(2),c); %%Allocate space
+figure;
 %%For each person
 for i = 1 : c
     personIndices = Index(i,:);
@@ -96,14 +97,19 @@ U = U(:,1:c-1);
 
 F = zeros(N(1)*N(2), c-1);
 
+figure;
 for i = 1 : c - 1
    F(:,i) = u*U(:,i);
+    subplot(5,4,i);
+    imshow(reshape(F(:,i),[245,177]))
 end
 
 %%Calculate weights
-weight = zeros(c-1, c); %%Allocate space
+weight = zeros(c, c-1); %%Allocate space
 for i = 1 : c
-    weight(:,i) = F'*averageCurrentPerson(:,i);
+    weight(i,:) = F'*averageCurrentPerson(:,i);
 end
 
-save('computedFisherData.mat', 'weight', 'u');
+index = [1, 2, 4, 5, 6, 7, 10, 13, 14, 3, 8, 9, 11, 12, 15, 16];
+
+save('computedFisherData.mat', 'weight', 'u', 'index_images', 'F');
