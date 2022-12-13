@@ -33,10 +33,12 @@ for i = 1:nfiles
   end
 
 end
-  prob_image(128,128) = 0;  
+  %prob_image(128,128) = 0;  
    
   prob_image = prob_image./max(prob_image(:));
+  skinMatrix = prob_image;
   imwrite(prob_image, 'skinprobability.jpg');
+  save('skinProbabilityMatrixData.mat', 'skinMatrix');
 
 
   %Save image
@@ -57,6 +59,6 @@ end
   prob_image_large=imresize(prob_image, [2048 2048]);
   imwrite(prob_image_large, 'skinprobability_vis.jpg');
 
-
+  
 end
 

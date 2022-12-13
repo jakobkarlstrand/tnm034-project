@@ -6,15 +6,16 @@ function id = tnm034(im)
 
 %% Load data
 data = load('computedFisherData.mat');
+dataSkin = load('skinProbabilityMatrixData.mat')
 weight = data.weight; %%Weights
 u = data.u; %%Best eigenvectors
 F = data.F;
 index = data.index;
 
 %% Preprocessing
-prob = imread('skinprobability.jpg');
+prob = dataSkin.skinMatrix;
 im = lighting_compensation(im,0.2);
-skin = skinmask(im, 0.03,prob);
+skin = skinmask(im, 0.1,prob);
 EyeMap = eye_detection(im) & skin;
 MouthMap = mouth_detection(im) & skin;
 MouthRegions = mouth_regions(MouthMap);
